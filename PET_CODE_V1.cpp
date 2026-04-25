@@ -1,554 +1,576 @@
-// ============================================================
-//   Paws & Claws Pet Care Management System
-//   Concepts: Classes, Encapsulation, Abstraction,
-//             Inheritance, Function Overloading,
-//             Try-Catch, Switch-Case,
-//             Copy Constructor, Destructor (with message),
-//             Pure Virtual Function, Function Overriding,
-//             Function Template
-//
-//   NOTE: STL (vector, iterators) REMOVED.
-//         Storage now uses plain fixed-size arrays.
-// ============================================================
+/*
+ * ============================================================
+ *  PET CARE MANAGEMENT SYSTEM  — STL UPGRADED VERSION
+ *  Subject : 21CSC101T - Object Oriented Design and Programming
+ * ============================================================
+ *
+ *  UNIT 1-4 OOP Concepts (unchanged):
+ *  1. CLASSES & OBJECTS   - Pet, Dog, Cat, Owner, Appointment
+ *  2. ENCAPSULATION       - private data + public getters/setters
+ *  3. ABSTRACTION         - data accessed only via methods
+ *  4. INHERITANCE         - Dog and Cat derived from Pet
+ *  5. POLYMORPHISM        - virtual display() in base class Pet
+ *  6. FUNCTION OVERLOAD   - displayInfo() overloaded in Dog/Cat
+ *  7. EXCEPTION HANDLING  - try/catch for duplicate ID check
+ *
+ *  UNIT 5 STL Concepts (NEW additions):
+ *  A. vector<Pet*>        - replaces Dog array (polymorphic store)
+ *  B. vector<Owner>       - replaces Owner array
+ *  C. vector<Appointment> - replaces Appointment array
+ *  D. ITERATORS           - explicit iterator loops used
+ *  E. find_if()           - STL algorithm for searching by ID
+ *  F. sort()              - STL algorithm to sort pets by name
+ * ============================================================
+ */
 
 #include <iostream>
 #include <string>
-#include <stdexcept>
-
+#include <vector>      // STL [A] vector container
+#include <algorithm>   // STL [E,F] find_if(), sort()
+#include <stdexcept>   // for runtime_error (exception handling)
 using namespace std;
 
-// ============================================================
-// ARRAY SIZE CONSTANTS
-// All arrays are fixed at MAX_* elements.
-// If you try to add more, the program prints an error.
-// ============================================================
-const int MAX_OWNERS       = 50;
-const int MAX_PETS         = 50;
-const int MAX_APPOINTMENTS = 50;
+// ================================================================
+//  CLASS 1 : Pet  (Base Class)
+//  OOP — ENCAPSULATION : all attributes are private
+//  OOP — ABSTRACTION   : data accessed only through public methods
+//  OOP — POLYMORPHISM  : virtual display() for runtime binding
+// ================================================================
+class Pet {
+private:
+    int    petID;
+    string name;
+    int    age;
+    string species;
 
-// ============================================================
-// CLASS: Owner
-// Demonstrates: Encapsulation, Constructors,
-//               Copy Constructor, Destructor (with message)
-// ============================================================
+public:
+    // ---------- Constructor (used when creating Dog/Cat objects) ----------
+    Pet() : petID(0), age(0) {}   // default constructor
+
+    // ---------- Setters (mutators) ----------
+    void setPetID(int id)      { petID   = id; }
+    void setName(string n)     { name    = n;  }
+    void setAge(int a)         { age     = a;  }
+    void setSpecies(string s)  { species = s;  }
+
+    // ---------- Getters (accessors) ----------
+    int    getPetID()    { return petID;   }
+    string getName()     { return name;    }
+    int    getAge()      { return age;     }
+    string getSpecies()  { return species; }
+
+    // ---------- Base display ----------
+    void displayPet() {
+        cout << "  Pet ID  : " << petID   << endl;
+        cout << "  Name    : " << name    << endl;
+        cout << "  Age     : " << age << " year(s)" << endl;
+        cout << "  Species : " << species << endl;
+    }
+
+    // OOP — POLYMORPHISM : virtual function overridden in Dog and Cat
+    virtual void display() {
+        displayPet();
+    }
+
+    // Virtual destructor — good practice with polymorphism + pointers
+    virtual ~Pet() {}
+};
+
+// ================================================================
+//  CLASS 2 : Dog  (Derived — INHERITANCE from Pet)
+//  OOP — FUNCTION OVERLOADING : display() overrides Pet::display()
+// ================================================================
+class Dog : public Pet {
+private:
+    string breed;
+    bool   isVaccinated;
+
+public:
+    Dog() : isVaccinated(false) {}
+
+    // ---------- Setters ----------
+    void setBreed(string b)      { breed        = b; }
+    void setVaccinated(bool v)   { isVaccinated = v; }
+
+    // ---------- Getters ----------
+    string getBreed()      { return breed;        }
+    bool   getVaccinated() { return isVaccinated; }
+
+    // OOP — POLYMORPHISM : overrides Pet::display() at runtime
+    void display() override {
+        Pet::displayPet();
+        cout << "  Breed       : " << breed << endl;
+        cout << "  Vaccinated  : " << (isVaccinated ? "Yes" : "No") << endl;
+    }
+
+    void bark() {
+        cout << "  " << Pet::getName() << " says: Woof! Woof!" << endl;
+    }
+};
+
+// ================================================================
+//  CLASS 3 : Cat  (Derived — INHERITANCE from Pet)
+//  New class added to demonstrate Cat along with Dog
+// ================================================================
+class Cat : public Pet {
+private:
+    string furColor;
+    bool   isIndoor;
+
+public:
+    Cat() : isIndoor(false) {}
+
+    // ---------- Setters ----------
+    void setFurColor(string c)  { furColor = c; }
+    void setIndoor(bool i)      { isIndoor  = i; }
+
+    // ---------- Getters ----------
+    string getFurColor()  { return furColor; }
+    bool   getIndoor()    { return isIndoor; }
+
+    // OOP — POLYMORPHISM : overrides Pet::display() at runtime
+    void display() override {
+        Pet::displayPet();
+        cout << "  Fur Color   : " << furColor << endl;
+        cout << "  Indoor      : " << (isIndoor ? "Yes" : "No") << endl;
+    }
+
+    void meow() {
+        cout << "  " << Pet::getName() << " says: Meow! Meow!" << endl;
+    }
+};
+
+// ================================================================
+//  CLASS 4 : Owner
+//  OOP — ENCAPSULATION : ownerID, name, phone, email are private
+// ================================================================
 class Owner {
 private:
     int    ownerID;
     string name;
     string phone;
+    string email;
 
 public:
-    // Default constructor
-    Owner() : ownerID(0), name("Unknown"), phone("N/A") {}
+    Owner() : ownerID(0) {}
 
-    // Parameterized constructor
-    Owner(int id, string n, string p) : ownerID(id), name(n), phone(p) {}
+    // ---------- Setters ----------
+    void setOwnerID(int id)   { ownerID = id; }
+    void setName(string n)    { name    = n;  }
+    void setPhone(string p)   { phone   = p;  }
+    void setEmail(string e)   { email   = e;  }
 
-    // --------------------------------------------------------
-    // COPY CONSTRUCTOR
-    // Called when an Owner object is copied (e.g. Owner b = a;)
-    // Also triggered when we assign: owners[i] = Owner(id, n, p)
-    // --------------------------------------------------------
-    Owner(const Owner& other)
-        : ownerID(other.ownerID), name(other.name), phone(other.phone) {
-        cout << "  [Copy Constructor] Owner \"" << name << "\" was copied.\n";
-    }
+    // ---------- Getters ----------
+    int    getOwnerID()  { return ownerID; }
+    string getName()     { return name;    }
+    string getPhone()    { return phone;   }
+    string getEmail()    { return email;   }
 
-    // --------------------------------------------------------
-    // DESTRUCTOR (with message)
-    // Called automatically when an Owner object goes out of scope.
-    // --------------------------------------------------------
-    ~Owner() {
-        // Uncomment to see destructor calls at runtime:
-        // cout << "  [Destructor] Owner \"" << name << "\" removed from memory.\n";
-    }
-
-    // Getters (public access to private data — Encapsulation)
-    int    getOwnerID() const { return ownerID; }
-    string getName()    const { return name; }
-    string getPhone()   const { return phone; }
-
-    void display() const {
-        cout << "  Owner ID : " << ownerID << "\n"
-             << "  Name     : " << name    << "\n"
-             << "  Phone    : " << phone   << "\n";
+    // ---------- Display ----------
+    void displayOwner() {
+        cout << "  Owner ID : " << ownerID << endl;
+        cout << "  Name     : " << name    << endl;
+        cout << "  Phone    : " << phone   << endl;
+        cout << "  Email    : " << email   << endl;
     }
 };
 
-// ============================================================
-// ABSTRACT BASE CLASS: Pet
-// Demonstrates: Encapsulation, Constructors, Inheritance base,
-//               ABSTRACTION via pure virtual function (display)
-// Pet cannot be instantiated directly — it is an abstract class.
-// Any class that inherits Pet MUST override display().
-// ============================================================
-class Pet {
-protected:
-    int    petID;
-    string petName;
-    int    ownerID;   // links pet to its owner
-    string species;   // "Dog" or "Cat"
-
-public:
-    // Default constructor
-    Pet() : petID(0), petName("Unknown"), ownerID(0), species("Unknown") {}
-
-    // Parameterized constructor
-    Pet(int pid, string pname, int oid, string spec)
-        : petID(pid), petName(pname), ownerID(oid), species(spec) {}
-
-    // Getters
-    int    getPetID()   const { return petID; }
-    string getPetName() const { return petName; }
-    int    getOwnerID() const { return ownerID; }
-    string getSpecies() const { return species; }
-
-    // --------------------------------------------------------
-    // PURE VIRTUAL FUNCTION -> makes Pet an ABSTRACT CLASS
-    // '= 0' means Pet has NO implementation for display().
-    // Every derived class (Dog, Cat) MUST provide its own.
-    // You cannot create a Pet object directly -- only Dog/Cat.
-    // This is Abstraction: hiding details, enforcing a contract.
-    // --------------------------------------------------------
-    virtual void display() const = 0;
-
-    // --------------------------------------------------------
-    // VIRTUAL DESTRUCTOR (with message)
-    // Must be virtual so that deleting a Pet* calls the correct
-    // derived class destructor (Dog or Cat) first.
-    // --------------------------------------------------------
-    virtual ~Pet() {
-        cout << "  [Destructor] Pet \"" << petName << "\" removed from memory.\n";
-    }
-};
-
-// ============================================================
-// DERIVED CLASS: Dog  (inherits from Pet)
-// Demonstrates: Inheritance, Function Overriding
-// ============================================================
-class Dog : public Pet {
-private:
-    string breed;
-
-public:
-    Dog() : Pet(), breed("Unknown") {}
-
-    Dog(int pid, string pname, int oid, string b)
-        : Pet(pid, pname, oid, "Dog"), breed(b) {}
-
-    // --------------------------------------------------------
-    // OVERRIDE of pure virtual function from Pet (abstract class)
-    // Dog MUST implement display() -- Pet provides no body.
-    // --------------------------------------------------------
-    void display() const override {
-        cout << "  Pet ID   : " << petID   << "\n"
-             << "  Name     : " << petName << "\n"
-             << "  Species  : " << species << "\n"
-             << "  Owner ID : " << ownerID << "\n"
-             << "  Breed    : " << breed   << "\n";
-    }
-};
-
-// ============================================================
-// DERIVED CLASS: Cat  (inherits from Pet)
-// Demonstrates: Inheritance, Function Overriding
-// ============================================================
-class Cat : public Pet {
-private:
-    bool isIndoor;
-
-public:
-    Cat() : Pet(), isIndoor(true) {}
-
-    Cat(int pid, string pname, int oid, bool indoor)
-        : Pet(pid, pname, oid, "Cat"), isIndoor(indoor) {}
-
-    // --------------------------------------------------------
-    // OVERRIDE of pure virtual function from Pet (abstract class)
-    // --------------------------------------------------------
-    void display() const override {
-        cout << "  Pet ID   : " << petID   << "\n"
-             << "  Name     : " << petName << "\n"
-             << "  Species  : " << species << "\n"
-             << "  Owner ID : " << ownerID << "\n"
-             << "  Type     : " << (isIndoor ? "Indoor" : "Outdoor") << "\n";
-    }
-};
-
-// ============================================================
-// CLASS: Appointment
-// Demonstrates: Encapsulation, Constructors
-// ============================================================
+// ================================================================
+//  CLASS 5 : Appointment
+//  OOP — ENCAPSULATION : all fields are private
+// ================================================================
 class Appointment {
 private:
-    int    apptID;
+    int    appointmentID;
     int    petID;
-    string date;    // format: DD/MM/YYYY
-    string reason;
+    string date;
+    string purpose;
+    string status;
 
 public:
-    static int apptCounter;   // auto-increment ID
+    Appointment() : appointmentID(0), petID(0), status("Scheduled") {}
 
-    // Default constructor
-    Appointment() : apptID(0), petID(0), date("N/A"), reason("N/A") {}
+    // ---------- Setters ----------
+    void setAppointmentID(int id)  { appointmentID = id;          }
+    void setPetID(int pid)         { petID         = pid;         }
+    void setDate(string d)         { date          = d;           }
+    void setPurpose(string p)      { purpose       = p;           }
+    void setStatus(string s)       { status        = s;           }
 
-    // Parameterized constructor
-    Appointment(int pid, string d, string r)
-        : apptID(++apptCounter), petID(pid), date(d), reason(r) {}
+    // ---------- Getters ----------
+    int    getAppointmentID()  { return appointmentID; }
+    int    getPetID()          { return petID;         }
+    string getDate()           { return date;          }
+    string getPurpose()        { return purpose;       }
+    string getStatus()         { return status;        }
 
-    void display() const {
-        cout << "  Appt ID  : " << apptID << "\n"
-             << "  Pet ID   : " << petID  << "\n"
-             << "  Date     : " << date   << "\n"
-             << "  Reason   : " << reason << "\n";
+    void cancel() {
+        status = "Cancelled";
+        cout << "  Appointment " << appointmentID << " has been cancelled." << endl;
+    }
+
+    void displayAppointment() {
+        cout << "  Appt. ID : " << appointmentID << endl;
+        cout << "  Pet ID   : " << petID         << endl;
+        cout << "  Date     : " << date          << endl;
+        cout << "  Purpose  : " << purpose       << endl;
+        cout << "  Status   : " << status        << endl;
     }
 };
 
-int Appointment::apptCounter = 0;
-
-// ============================================================
-// FUNCTION TEMPLATE: printSectionHeader<T>
-// Works with ANY data type (T) -- string, int, etc.
-// Prints a neat section divider in displayAllRecords().
-// ============================================================
-template <typename T>
-void printSectionHeader(T title) {
-    cout << "\n========================================\n";
-    cout << "  " << title << "\n";
-    cout << "========================================\n";
+// ================================================================
+//  HELPER : Print separator line
+// ================================================================
+void printLine() {
+    cout << "  ----------------------------------------" << endl;
 }
 
-// ============================================================
-// CLASS: PetCareSystem  (main controller)
-// Demonstrates: Function Overloading, Try-Catch, Plain Arrays
-//
-// ARRAYS used here (no STL):
-//   Owner       owners[MAX_OWNERS]            -- fixed-size array
-//   Pet*        pets[MAX_PETS]                -- array of pointers
-//   Appointment appointments[MAX_APPOINTMENTS]-- fixed-size array
-//
-// ownerCount, petCount, apptCount track how many slots are used.
-// ============================================================
-class PetCareSystem {
-private:
-    // --------------------------------------------------------
-    // FIXED-SIZE ARRAYS (replacing STL vectors)
-    // Declared with maximum capacity upfront.
-    // Counters track how many entries are actually filled.
-    // --------------------------------------------------------
-    Owner       owners[MAX_OWNERS];               // plain array of Owner objects
-    Pet*        pets[MAX_PETS];                   // array of Pet pointers (for polymorphism)
-    Appointment appointments[MAX_APPOINTMENTS];   // plain array of Appointment objects
+// ================================================================
+//  HELPER : Print the main menu  (UNCHANGED from original)
+// ================================================================
+void showMenu() {
+    cout << endl;
+    cout << "  ========================================" << endl;
+    cout << "      PET CARE MANAGEMENT SYSTEM         " << endl;
+    cout << "  ========================================" << endl;
+    cout << "  1. Add Pet (Dog)" << endl;
+    cout << "  2. Display All Pets" << endl;
+    cout << "  3. Add Owner" << endl;
+    cout << "  4. Display All Owners" << endl;
+    cout << "  5. Add Appointment" << endl;
+    cout << "  6. Display All Appointments" << endl;
+    cout << "  7. Exit" << endl;
+    cout << "  ----------------------------------------" << endl;
+    cout << "  Enter your choice: ";
+}
 
-    // How many entries are currently used in each array
-    int ownerCount = 0;
-    int petCount   = 0;
-    int apptCount  = 0;
+// ================================================================
+//  STL [E] — find_if() HELPER PREDICATES
+//  These are simple functions used by find_if() to search by ID.
+//  A predicate returns true when the element matches.
+// ================================================================
 
-    // Auto-increment IDs
-    int ownerCounter = 0;
-    int petCounter   = 0;
-
-    // Initialize all pet pointers to nullptr for safe deletion later
-    void initPets() {
-        for (int i = 0; i < MAX_PETS; i++)
-            pets[i] = nullptr;
+// Checks if a Pet pointer has the given petID
+struct MatchPetID {
+    int targetID;
+    MatchPetID(int id) : targetID(id) {}
+    bool operator()(Pet* p) {
+        return p->getPetID() == targetID;
     }
+};
 
-    // Helper: check if an owner ID exists in the owners array
-    bool ownerExists(int id) {
-        // Plain index-based for loop -- no STL iterators
-        for (int i = 0; i < ownerCount; i++)
-            if (owners[i].getOwnerID() == id) return true;
-        return false;
+// Checks if an Owner has the given ownerID
+struct MatchOwnerID {
+    int targetID;
+    MatchOwnerID(int id) : targetID(id) {}
+    bool operator()(const Owner& o) {
+        return const_cast<Owner&>(o).getOwnerID() == targetID;
     }
+};
 
-    // Helper: check if a pet ID exists in the pets array
-    bool petExists(int id) {
-        for (int i = 0; i < petCount; i++)
-            if (pets[i]->getPetID() == id) return true;
-        return false;
+// Checks if an Appointment has the given appointmentID
+struct MatchApptID {
+    int targetID;
+    MatchApptID(int id) : targetID(id) {}
+    bool operator()(const Appointment& a) {
+        return const_cast<Appointment&>(a).getAppointmentID() == targetID;
     }
+};
 
-public:
-    // Constructor: initialize pet pointer array to nullptr
-    PetCareSystem() {
-        initPets();
-    }
+// ================================================================
+//  STL [F] — sort() COMPARATOR
+//  Used to sort pets alphabetically by name before displaying.
+// ================================================================
+bool comparePetByName(Pet* a, Pet* b) {
+    return a->getName() < b->getName();
+}
 
-    // --------------------------------------------------------
-    // DESTRUCTOR (with message)
-    // Loops through pets[] and deletes each heap object.
-    // Called automatically when PetCareSystem goes out of scope.
-    // --------------------------------------------------------
-    ~PetCareSystem() {
-        for (int i = 0; i < petCount; i++) {
-            delete pets[i];      // calls virtual ~Pet(), then ~Dog or ~Cat
-            pets[i] = nullptr;   // safe cleanup
-        }
-        cout << "\n[Destructor] PetCareSystem shut down. All pet records cleared from memory.\n";
-    }
+// ================================================================
+//  MAIN FUNCTION — Menu-driven program using switch-case
+//  FLOW is IDENTICAL to original; only storage changed to STL.
+// ================================================================
+int main() {
 
-    // ----------------------------------------------------------
-    // PHASE 1 -- SETUP
-    // ----------------------------------------------------------
+    // ── STL [A] vector<Pet*> replaces Dog dogs[MAX] ──────────────
+    // Pet* allows storing Dog AND Cat objects (polymorphism)
+    vector<Pet*> pets;          // STL CONTAINER — stores pointers to Pet objects
 
-    void registerOwner() {
-        string name, phone;
+    // ── STL [B] vector<Owner> replaces Owner owners[MAX] ─────────
+    vector<Owner> owners;       // STL CONTAINER — stores Owner objects
 
-        cout << "\n--- Register Owner ---\n";
-        cout << "Enter Owner Name  : "; cin.ignore(); getline(cin, name);
-        cout << "Enter Phone Number: "; getline(cin, phone);
+    // ── STL [C] vector<Appointment> replaces Appointment arr[] ───
+    vector<Appointment> appointments;  // STL CONTAINER
 
-        // Try-catch: validate input
-        try {
-            if (name.empty() || phone.empty())
-                throw invalid_argument("Name and phone cannot be empty.");
+    int choice;
+    int    id, age, petRef;
+    string name, breed, phone, email, date, purpose;
+    char   vacChar;
 
-            // Check array capacity before adding
-            if (ownerCount >= MAX_OWNERS)
-                throw runtime_error("Owner list is full. Cannot add more owners.");
+    // ── Main program loop ──────────────────────────────────────────
+    do {
+        showMenu();
+        cin >> choice;
+        cin.ignore();
 
-            int id = ++ownerCounter;
-            // Assign new Owner into the next free slot of the array
-            // This triggers the Owner copy constructor
-            owners[ownerCount] = Owner(id, name, phone);
-            ownerCount++;
+        switch (choice) {
 
-            cout << "  Owner registered successfully! Owner ID: " << id << "\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-            --ownerCounter;
-        }
-    }
+            // ────────────────────────────────────────────────────
+            // OPTION 1 : Add a Pet (Dog)
+            //  OOP — Uses Dog (derived class) and polymorphism
+            //  STL — push_back() adds Dog* to vector<Pet*>
+            //  OOP — EXCEPTION HANDLING: duplicate ID check
+            // ────────────────────────────────────────────────────
+            case 1: {
+                cout << endl << "  --- Add New Dog ---" << endl;
 
-    void registerPet() {
-        int ownerID, petType;
-        string petName;
+                cout << "  Enter Pet ID   : "; cin >> id;  cin.ignore();
 
-        cout << "\n--- Register Pet ---\n";
-        cout << "Enter Owner ID (pet belongs to): "; cin >> ownerID;
+                // OOP — EXCEPTION HANDLING : check for duplicate Pet ID
+                // STL [E] — find_if() searches vector using MatchPetID predicate
+                vector<Pet*>::iterator dupIt = find_if(
+                    pets.begin(), pets.end(), MatchPetID(id)
+                );
 
-        // Try-catch: validate owner and array capacity
-        try {
-            if (!ownerExists(ownerID))
-                throw runtime_error("Owner ID " + to_string(ownerID) + " not found. Register the owner first.");
+                try {
+                    if (dupIt != pets.end()) {
+                        // ID already exists — throw exception
+                        throw runtime_error("Pet ID already exists!");
+                    }
 
-            if (petCount >= MAX_PETS)
-                throw runtime_error("Pet list is full. Cannot add more pets.");
+                    // Create new Dog on heap (needed for polymorphism with Pet*)
+                    Dog* d = new Dog();
+                    d->setPetID(id);
 
-            cout << "Enter Pet Name  : "; cin.ignore(); getline(cin, petName);
-            if (petName.empty()) throw invalid_argument("Pet name cannot be empty.");
+                    cout << "  Enter Name     : "; getline(cin, name);
+                    d->setName(name);
 
-            cout << "Select Species  : 1) Dog  2) Cat\nChoice: "; cin >> petType;
+                    cout << "  Enter Age      : "; cin >> age; cin.ignore();
+                    d->setAge(age);
+                    d->setSpecies("Dog");
 
-            int pid = ++petCounter;
+                    cout << "  Enter Breed    : "; getline(cin, breed);
+                    d->setBreed(breed);
 
-            if (petType == 1) {
-                string breed;
-                cout << "Enter Breed     : "; cin.ignore(); getline(cin, breed);
-                // Allocate Dog on heap, store pointer in pets array
-                pets[petCount] = new Dog(pid, petName, ownerID, breed);
-            }
-            else if (petType == 2) {
-                char indoorChar;
-                cout << "Indoor cat? (y/n): "; cin >> indoorChar;
-                bool indoor = (indoorChar == 'y' || indoorChar == 'Y');
-                // Allocate Cat on heap, store pointer in pets array
-                pets[petCount] = new Cat(pid, petName, ownerID, indoor);
-            }
-            else {
-                throw invalid_argument("Invalid species choice.");
-            }
+                    cout << "  Vaccinated? (y/n): "; cin >> vacChar; cin.ignore();
+                    d->setVaccinated(vacChar == 'y' || vacChar == 'Y');
 
-            petCount++;
-            cout << "  Pet registered successfully! Pet ID: " << pid << "\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-            --petCounter;
-        }
-    }
-
-    // ----------------------------------------------------------
-    // PHASE 2 -- OPERATIONS
-    // ----------------------------------------------------------
-
-    void bookAppointment() {
-        int petID;
-        string date, reason;
-
-        cout << "\n--- Book Appointment ---\n";
-        cout << "Enter Pet ID : "; cin >> petID;
-
-        try {
-            if (!petExists(petID))
-                throw runtime_error("Pet ID " + to_string(petID) + " not found.");
-
-            if (apptCount >= MAX_APPOINTMENTS)
-                throw runtime_error("Appointment list is full.");
-
-            cout << "Enter Date (DD/MM/YYYY): "; cin.ignore(); getline(cin, date);
-            cout << "Enter Reason           : "; getline(cin, reason);
-
-            if (date.empty() || reason.empty())
-                throw invalid_argument("Date and reason cannot be empty.");
-
-            // Store Appointment into next free slot of the array
-            appointments[apptCount] = Appointment(petID, date, reason);
-            apptCount++;
-
-            cout << "  Appointment booked successfully!\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-        }
-    }
-
-    // ----------------------------------------------------------
-    // FUNCTION OVERLOADING: searchPet by ID  and  by Name
-    // Same name, different parameter type.
-    // Compiler picks the correct version at compile time.
-    // ----------------------------------------------------------
-
-    void searchPet(int id) {
-        // Overload 1: search by integer pet ID
-        cout << "\n--- Search Result (by ID: " << id << ") ---\n";
-        bool found = false;
-        for (int i = 0; i < petCount; i++) {
-            if (pets[i]->getPetID() == id) {
-                pets[i]->display();   // virtual dispatch: Dog or Cat display()
-                found = true;
+                    // STL [A] — push_back() adds Dog* into vector<Pet*>
+                    pets.push_back(d);
+                    cout << "  [+] Dog added successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    // OOP — EXCEPTION HANDLING : catch and report error
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
                 break;
             }
-        }
-        if (!found) cout << "  No pet found with ID " << id << ".\n";
-    }
 
-    void searchPet(const string& name) {
-        // Overload 2: search by pet name (case-insensitive)
-        cout << "\n--- Search Result (by Name: \"" << name << "\") ---\n";
-        bool found = false;
-        for (int i = 0; i < petCount; i++) {
-            string pName = pets[i]->getPetName();
-            string qName = name;
-            // Manual lowercase -- no <algorithm> needed
-            for (int c = 0; c < (int)pName.size(); c++) pName[c] = tolower(pName[c]);
-            for (int c = 0; c < (int)qName.size(); c++) qName[c] = tolower(qName[c]);
-            if (pName == qName) {
-                pets[i]->display();
-                cout << "  ----------\n";
-                found = true;
-            }
-        }
-        if (!found) cout << "  No pet found with name \"" << name << "\".\n";
-    }
+            // ────────────────────────────────────────────────────
+            // OPTION 2 : Display All Pets
+            //  STL [F] — sort() sorts pets by name before display
+            //  STL [D] — explicit iterator loop used here
+            //  OOP — POLYMORPHISM : d->display() calls Dog::display()
+            // ────────────────────────────────────────────────────
+            case 2: {
+                cout << endl << "  --- All Pets (Dogs) ---" << endl;
 
-    void searchMenu() {
-        int choice;
-        cout << "\n--- Search Pet ---\n";
-        cout << "1) Search by ID\n2) Search by Name\nChoice: ";
-        cin >> choice;
+                if (pets.empty()) {    // vector method: empty()
+                    cout << "  No pets added yet." << endl;
+                    break;
+                }
 
-        try {
-            if (choice == 1) {
-                int id;
-                cout << "Enter Pet ID  : "; cin >> id;
-                searchPet(id);          // calls overload 1
-            }
-            else if (choice == 2) {
-                string name;
-                cout << "Enter Pet Name: "; cin.ignore(); getline(cin, name);
-                searchPet(name);        // calls overload 2
-            }
-            else {
-                throw invalid_argument("Invalid search option.");
-            }
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-        }
-    }
+                // STL [F] — sort() algorithm: sorts pets alphabetically by name
+                sort(pets.begin(), pets.end(), comparePetByName);
+                cout << "  (Sorted alphabetically by name)" << endl;
 
-    // ----------------------------------------------------------
-    // PHASE 3 -- MANAGEMENT
-    // ----------------------------------------------------------
+                // STL [D] — EXPLICIT ITERATOR LOOP (required in syllabus)
+                // vector<Pet*>::iterator traverses the vector one by one
+                int count = 1;
+                for (vector<Pet*>::iterator it = pets.begin();
+                     it != pets.end(); ++it) {
 
-    void displayAllRecords() {
-        // printSectionHeader is a FUNCTION TEMPLATE (works for any type T)
-        printSectionHeader(string("ALL OWNERS"));
-        if (ownerCount == 0) cout << "  No owners registered yet.\n";
-        // Loop through filled portion of owners array using index
-        for (int i = 0; i < ownerCount; i++) {
-            owners[i].display();
-            cout << "  --------\n";
-        }
+                    printLine();
+                    cout << "  Pet #" << count++ << endl;
 
-        printSectionHeader(string("ALL PETS"));
-        if (petCount == 0) cout << "  No pets registered yet.\n";
-        for (int i = 0; i < petCount; i++) {
-            pets[i]->display();   // virtual dispatch selects Dog or Cat display()
-            cout << "  --------\n";
-        }
+                    // OOP — POLYMORPHISM : (*it) is Pet*, but calls Dog::display()
+                    (*it)->display();
 
-        printSectionHeader(string("ALL APPOINTMENTS"));
-        if (apptCount == 0) cout << "  No appointments booked yet.\n";
-        for (int i = 0; i < apptCount; i++) {
-            appointments[i].display();
-            cout << "  --------\n";
-        }
-    }
-
-    // ----------------------------------------------------------
-    // MAIN MENU (Switch-Case) -- unchanged from original workflow
-    // ----------------------------------------------------------
-    void run() {
-        cout << "\n============================================\n";
-        cout << "   Welcome to Paws & Claws Management     \n";
-        cout << "============================================\n";
-
-        int choice;
-        do {
-            cout << "\n--- Phase 1: Setup ---\n";
-            cout << "  1. Register Owner\n";
-            cout << "  2. Register Pet\n";
-            cout << "--- Phase 2: Operations ---\n";
-            cout << "  3. Book Appointment\n";
-            cout << "  4. Search Pet (by ID or Name)\n";
-            cout << "--- Phase 3: Management ---\n";
-            cout << "  5. Display All Records\n";
-            cout << "  6. Exit\n";
-            cout << "Enter choice: ";
-            cin  >> choice;
-
-            // Try-catch: handle non-integer menu input
-            if (cin.fail()) {
-                cin.clear();
-                cin.ignore(1000, '\n');
-                cout << "  Please enter a valid number.\n";
-                continue;
+                    // Cast to Dog* to call bark() — safe since we only add Dogs here
+                    Dog* dogPtr = dynamic_cast<Dog*>(*it);
+                    if (dogPtr != nullptr) {
+                        dogPtr->bark();
+                    }
+                }
+                printLine();
+                break;
             }
 
-            switch (choice) {
-                case 1: registerOwner();     break;
-                case 2: registerPet();       break;
-                case 3: bookAppointment();   break;
-                case 4: searchMenu();        break;
-                case 5: displayAllRecords(); break;
-                case 6: cout << "\nGoodbye! Keep your pets happy!\n"; break;
-                default: cout << "  Invalid option. Try again.\n";
+            // ────────────────────────────────────────────────────
+            // OPTION 3 : Add an Owner
+            //  STL [B] — push_back() adds Owner into vector<Owner>
+            //  OOP — EXCEPTION HANDLING: duplicate owner ID check
+            //  STL [E] — find_if() used to detect duplicate ID
+            // ────────────────────────────────────────────────────
+            case 3: {
+                cout << endl << "  --- Add New Owner ---" << endl;
+
+                cout << "  Enter Owner ID : "; cin >> id; cin.ignore();
+
+                // STL [E] — find_if() searches owners vector for duplicate ID
+                vector<Owner>::iterator dupOwner = find_if(
+                    owners.begin(), owners.end(), MatchOwnerID(id)
+                );
+
+                try {
+                    if (dupOwner != owners.end()) {
+                        throw runtime_error("Owner ID already exists!");
+                    }
+
+                    Owner o;
+                    o.setOwnerID(id);
+
+                    cout << "  Enter Name     : "; getline(cin, name);
+                    o.setName(name);
+
+                    cout << "  Enter Phone    : "; getline(cin, phone);
+                    o.setPhone(phone);
+
+                    cout << "  Enter Email    : "; getline(cin, email);
+                    o.setEmail(email);
+
+                    // STL [B] — push_back() grows vector automatically (no MAX limit)
+                    owners.push_back(o);
+                    cout << "  [+] Owner added successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
+                break;
             }
 
-        } while (choice != 6);
-    }
-};
+            // ────────────────────────────────────────────────────
+            // OPTION 4 : Display All Owners
+            //  STL [D] — explicit iterator loop used here
+            // ────────────────────────────────────────────────────
+            case 4: {
+                cout << endl << "  --- All Owners ---" << endl;
 
-// ============================================================
-// MAIN
-// ============================================================
-int main() {
-    PetCareSystem system;
-    system.run();
+                if (owners.empty()) {
+                    cout << "  No owners added yet." << endl;
+                    break;
+                }
+
+                // STL [D] — EXPLICIT ITERATOR LOOP over vector<Owner>
+                int count = 1;
+                for (vector<Owner>::iterator it = owners.begin();
+                     it != owners.end(); ++it) {
+
+                    printLine();
+                    cout << "  Owner #" << count++ << endl;
+                    it->displayOwner();   // it->  is same as (*it).
+                }
+                printLine();
+                break;
+            }
+
+            // ────────────────────────────────────────────────────
+            // OPTION 5 : Add an Appointment
+            //  STL [C] — push_back() into vector<Appointment>
+            //  STL [E] — find_if() checks duplicate appointment ID
+            //  OOP — EXCEPTION HANDLING for duplicate ID
+            // ────────────────────────────────────────────────────
+            case 5: {
+                cout << endl << "  --- Add New Appointment ---" << endl;
+
+                cout << "  Enter Appointment ID : "; cin >> id;     cin.ignore();
+
+                // STL [E] — find_if() checks for duplicate appointment ID
+                vector<Appointment>::iterator dupAppt = find_if(
+                    appointments.begin(), appointments.end(), MatchApptID(id)
+                );
+
+                try {
+                    if (dupAppt != appointments.end()) {
+                        throw runtime_error("Appointment ID already exists!");
+                    }
+
+                    Appointment a;
+                    a.setAppointmentID(id);
+
+                    cout << "  Enter Pet ID         : "; cin >> petRef; cin.ignore();
+                    a.setPetID(petRef);
+
+                    cout << "  Enter Date (DD/MM/YYYY): "; getline(cin, date);
+                    a.setDate(date);
+
+                    cout << "  Enter Purpose        : "; getline(cin, purpose);
+                    a.setPurpose(purpose);
+
+                    a.setStatus("Scheduled");
+
+                    // STL [C] — push_back() adds Appointment into vector
+                    appointments.push_back(a);
+                    cout << "  [+] Appointment scheduled successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
+                break;
+            }
+
+            // ────────────────────────────────────────────────────
+            // OPTION 6 : Display All Appointments
+            //  STL [D] — explicit iterator loop used here
+            // ────────────────────────────────────────────────────
+            case 6: {
+                cout << endl << "  --- All Appointments ---" << endl;
+
+                if (appointments.empty()) {
+                    cout << "  No appointments added yet." << endl;
+                    break;
+                }
+
+                // STL [D] — EXPLICIT ITERATOR LOOP over vector<Appointment>
+                int count = 1;
+                for (vector<Appointment>::iterator it = appointments.begin();
+                     it != appointments.end(); ++it) {
+
+                    printLine();
+                    cout << "  Appointment #" << count++ << endl;
+                    it->displayAppointment();
+                }
+                printLine();
+                break;
+            }
+
+            // ────────────────────────────────────────────────────
+            // OPTION 7 : Exit
+            //  Free all heap memory (Dog/Cat objects created with new)
+            // ────────────────────────────────────────────────────
+            case 7: {
+                // Free memory: each Pet* was allocated with new Dog()
+                for (vector<Pet*>::iterator it = pets.begin();
+                     it != pets.end(); ++it) {
+                    delete *it;   // call destructor for each Dog/Cat
+                }
+                pets.clear();
+
+                cout << endl;
+                cout << "  Thank you for using Pet Care Management System!" << endl;
+                cout << "  Goodbye!" << endl << endl;
+                break;
+            }
+
+            // ────────────────────────────────────────────────────
+            // DEFAULT : Invalid input
+            // ────────────────────────────────────────────────────
+            default:
+                cout << "  [!] Invalid choice. Please enter 1-7." << endl;
+                break;
+        }
+
+    } while (choice != 7);
+
     return 0;
 }
+

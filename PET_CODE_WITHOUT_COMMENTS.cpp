@@ -1,424 +1,424 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
 #include <stdexcept>
-
 using namespace std;
 
+class Pet {
+private:
+    int    petID;
+    string name;
+    int    age;
+    string species;
 
-const int MAX_OWNERS       = 50;
-const int MAX_PETS         = 50;
-const int MAX_APPOINTMENTS = 50;
+public:
+    Pet() : petID(0), age(0) {}
+
+    void setPetID(int id)      { petID   = id; }
+    void setName(string n)     { name    = n;  }
+    void setAge(int a)         { age     = a;  }
+    void setSpecies(string s)  { species = s;  }
+
+    int    getPetID()    { return petID;   }
+    string getName()     { return name;    }
+    int    getAge()      { return age;     }
+    string getSpecies()  { return species; }
+
+    void displayPet() {
+        cout << "  Pet ID  : " << petID   << endl;
+        cout << "  Name    : " << name    << endl;
+        cout << "  Age     : " << age << " year(s)" << endl;
+        cout << "  Species : " << species << endl;
+    }
+
+    virtual void display() {
+        displayPet();
+    }
+
+    virtual ~Pet() {}
+};
+
+class Dog : public Pet {
+private:
+    string breed;
+    bool   isVaccinated;
+
+public:
+    Dog() : isVaccinated(false) {}
+
+    void setBreed(string b)      { breed        = b; }
+    void setVaccinated(bool v)   { isVaccinated = v; }
+
+    string getBreed()      { return breed;        }
+    bool   getVaccinated() { return isVaccinated; }
+
+    void display() override {
+        Pet::displayPet();
+        cout << "  Breed       : " << breed << endl;
+        cout << "  Vaccinated  : " << (isVaccinated ? "Yes" : "No") << endl;
+    }
+
+    void bark() {
+        cout << "  " << Pet::getName() << " says: Woof! Woof!" << endl;
+    }
+};
+
+class Cat : public Pet {
+private:
+    string furColor;
+    bool   isIndoor;
+
+public:
+    Cat() : isIndoor(false) {}
+
+    void setFurColor(string c)  { furColor = c;  }
+    void setIndoor(bool i)      { isIndoor  = i; }
+
+    string getFurColor()  { return furColor; }
+    bool   getIndoor()    { return isIndoor; }
+
+    void display() override {
+        Pet::displayPet();
+        cout << "  Fur Color   : " << furColor << endl;
+        cout << "  Indoor      : " << (isIndoor ? "Yes" : "No") << endl;
+    }
+
+    void meow() {
+        cout << "  " << Pet::getName() << " says: Meow! Meow!" << endl;
+    }
+};
 
 class Owner {
 private:
     int    ownerID;
     string name;
     string phone;
+    string email;
 
 public:
+    Owner() : ownerID(0) {}
 
-    Owner() : ownerID(0), name("Unknown"), phone("N/A") {}
+    void setOwnerID(int id)   { ownerID = id; }
+    void setName(string n)    { name    = n;  }
+    void setPhone(string p)   { phone   = p;  }
+    void setEmail(string e)   { email   = e;  }
 
+    int    getOwnerID()  { return ownerID; }
+    string getName()     { return name;    }
+    string getPhone()    { return phone;   }
+    string getEmail()    { return email;   }
 
-    Owner(int id, string n, string p) : ownerID(id), name(n), phone(p) {}
-
-
-    Owner(const Owner& other)
-        : ownerID(other.ownerID), name(other.name), phone(other.phone) {
-        cout << "  [Copy Constructor] Owner \"" << name << "\" was copied.\n";
-    }
-
-
-    ~Owner() {
-        
-    }
-
-    int    getOwnerID() const { return ownerID; }
-    string getName()    const { return name; }
-    string getPhone()   const { return phone; }
-
-    void display() const {
-        cout << "  Owner ID : " << ownerID << "\n"
-             << "  Name     : " << name    << "\n"
-             << "  Phone    : " << phone   << "\n";
+    void displayOwner() {
+        cout << "  Owner ID : " << ownerID << endl;
+        cout << "  Name     : " << name    << endl;
+        cout << "  Phone    : " << phone   << endl;
+        cout << "  Email    : " << email   << endl;
     }
 };
-
-
-class Pet {
-protected:
-    int    petID;
-    string petName;
-    int    ownerID;  
-    string species;  
-
-public:
-    Pet() : petID(0), petName("Unknown"), ownerID(0), species("Unknown") {}
-
-    
-    Pet(int pid, string pname, int oid, string spec)
-        : petID(pid), petName(pname), ownerID(oid), species(spec) {}
-
-    int    getPetID()   const { return petID; }
-    string getPetName() const { return petName; }
-    int    getOwnerID() const { return ownerID; }
-    string getSpecies() const { return species; }
-
-    virtual void display() const = 0;
-
-    virtual ~Pet() {
-        cout << "  [Destructor] Pet \"" << petName << "\" removed from memory.\n";
-    }
-};
-
-
-class Dog : public Pet {
-private:
-    string breed;
-
-public:
-    Dog() : Pet(), breed("Unknown") {}
-
-    Dog(int pid, string pname, int oid, string b)
-        : Pet(pid, pname, oid, "Dog"), breed(b) {}
-
-
-    void display() const override {
-        cout << "  Pet ID   : " << petID   << "\n"
-             << "  Name     : " << petName << "\n"
-             << "  Species  : " << species << "\n"
-             << "  Owner ID : " << ownerID << "\n"
-             << "  Breed    : " << breed   << "\n";
-    }
-};
-
-class Cat : public Pet {
-private:
-    bool isIndoor;
-
-public:
-    Cat() : Pet(), isIndoor(true) {}
-
-    Cat(int pid, string pname, int oid, bool indoor)
-        : Pet(pid, pname, oid, "Cat"), isIndoor(indoor) {}
-
-    void display() const override {
-        cout << "  Pet ID   : " << petID   << "\n"
-             << "  Name     : " << petName << "\n"
-             << "  Species  : " << species << "\n"
-             << "  Owner ID : " << ownerID << "\n"
-             << "  Type     : " << (isIndoor ? "Indoor" : "Outdoor") << "\n";
-    }
-};
-
 
 class Appointment {
 private:
-    int    apptID;
+    int    appointmentID;
     int    petID;
-    string date;    
-    string reason;
+    string date;
+    string purpose;
+    string status;
 
 public:
-    static int apptCounter;   
+    Appointment() : appointmentID(0), petID(0), status("Scheduled") {}
 
-    Appointment() : apptID(0), petID(0), date("N/A"), reason("N/A") {}
+    void setAppointmentID(int id)  { appointmentID = id;  }
+    void setPetID(int pid)         { petID         = pid; }
+    void setDate(string d)         { date          = d;   }
+    void setPurpose(string p)      { purpose       = p;   }
+    void setStatus(string s)       { status        = s;   }
 
-    Appointment(int pid, string d, string r)
-        : apptID(++apptCounter), petID(pid), date(d), reason(r) {}
+    int    getAppointmentID()  { return appointmentID; }
+    int    getPetID()          { return petID;         }
+    string getDate()           { return date;          }
+    string getPurpose()        { return purpose;       }
+    string getStatus()         { return status;        }
 
-    void display() const {
-        cout << "  Appt ID  : " << apptID << "\n"
-             << "  Pet ID   : " << petID  << "\n"
-             << "  Date     : " << date   << "\n"
-             << "  Reason   : " << reason << "\n";
+    void cancel() {
+        status = "Cancelled";
+        cout << "  Appointment " << appointmentID << " has been cancelled." << endl;
+    }
+
+    void displayAppointment() {
+        cout << "  Appt. ID : " << appointmentID << endl;
+        cout << "  Pet ID   : " << petID         << endl;
+        cout << "  Date     : " << date          << endl;
+        cout << "  Purpose  : " << purpose       << endl;
+        cout << "  Status   : " << status        << endl;
     }
 };
 
-int Appointment::apptCounter = 0;
-
-template <typename T>
-void printSectionHeader(T title) {
-    cout << "\n========================================\n";
-    cout << "  " << title << "\n";
-    cout << "========================================\n";
+void printLine() {
+    cout << "  ----------------------------------------" << endl;
 }
 
-class PetCareSystem {
-private:
-   
-    Owner       owners[MAX_OWNERS];               
-    Pet*        pets[MAX_PETS];                  
-    Appointment appointments[MAX_APPOINTMENTS];   
+void showMenu() {
+    cout << endl;
+    cout << "  ========================================" << endl;
+    cout << "      PET CARE MANAGEMENT SYSTEM         " << endl;
+    cout << "  ========================================" << endl;
+    cout << "  1. Add Pet (Dog)" << endl;
+    cout << "  2. Display All Pets" << endl;
+    cout << "  3. Add Owner" << endl;
+    cout << "  4. Display All Owners" << endl;
+    cout << "  5. Add Appointment" << endl;
+    cout << "  6. Display All Appointments" << endl;
+    cout << "  7. Exit" << endl;
+    cout << "  ----------------------------------------" << endl;
+    cout << "  Enter your choice: ";
+}
 
-
-    int ownerCount = 0;
-    int petCount   = 0;
-    int apptCount  = 0;
-
-    int ownerCounter = 0;
-    int petCounter   = 0;
-
-    void initPets() {
-        for (int i = 0; i < MAX_PETS; i++)
-            pets[i] = nullptr;
-    }
-
-    bool ownerExists(int id) {
-
-        for (int i = 0; i < ownerCount; i++)
-            if (owners[i].getOwnerID() == id) return true;
-        return false;
-    }
-
-
-    bool petExists(int id) {
-        for (int i = 0; i < petCount; i++)
-            if (pets[i]->getPetID() == id) return true;
-        return false;
-    }
-
-public:
-    
-    PetCareSystem() {
-        initPets();
-    }
-
-    ~PetCareSystem() {
-        for (int i = 0; i < petCount; i++) {
-            delete pets[i];     
-            pets[i] = nullptr;   
-        }
-        cout << "\n[Destructor] PetCareSystem shut down. All pet records cleared from memory.\n";
-    }
-
-    void registerOwner() {
-        string name, phone;
-
-        cout << "\n--- Register Owner ---\n";
-        cout << "Enter Owner Name  : "; cin.ignore(); getline(cin, name);
-        cout << "Enter Phone Number: "; getline(cin, phone);
-
-    
-        try {
-            if (name.empty() || phone.empty())
-                throw invalid_argument("Name and phone cannot be empty.");
-
-     
-            if (ownerCount >= MAX_OWNERS)
-                throw runtime_error("Owner list is full. Cannot add more owners.");
-
-            int id = ++ownerCounter;
-
-            owners[ownerCount] = Owner(id, name, phone);
-            ownerCount++;
-
-            cout << "  Owner registered successfully! Owner ID: " << id << "\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-            --ownerCounter;
-        }
-    }
-
-    void registerPet() {
-        int ownerID, petType;
-        string petName;
-
-        cout << "\n--- Register Pet ---\n";
-        cout << "Enter Owner ID (pet belongs to): "; cin >> ownerID;
-
-        try {
-            if (!ownerExists(ownerID))
-                throw runtime_error("Owner ID " + to_string(ownerID) + " not found. Register the owner first.");
-
-            if (petCount >= MAX_PETS)
-                throw runtime_error("Pet list is full. Cannot add more pets.");
-
-            cout << "Enter Pet Name  : "; cin.ignore(); getline(cin, petName);
-            if (petName.empty()) throw invalid_argument("Pet name cannot be empty.");
-
-            cout << "Select Species  : 1) Dog  2) Cat\nChoice: "; cin >> petType;
-
-            int pid = ++petCounter;
-
-            if (petType == 1) {
-                string breed;
-                cout << "Enter Breed     : "; cin.ignore(); getline(cin, breed);
-                pets[petCount] = new Dog(pid, petName, ownerID, breed);
-            }
-            else if (petType == 2) {
-                char indoorChar;
-                cout << "Indoor cat? (y/n): "; cin >> indoorChar;
-                bool indoor = (indoorChar == 'y' || indoorChar == 'Y');
-                pets[petCount] = new Cat(pid, petName, ownerID, indoor);
-            }
-            else {
-                throw invalid_argument("Invalid species choice.");
-            }
-
-            petCount++;
-            cout << "  Pet registered successfully! Pet ID: " << pid << "\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-            --petCounter;
-        }
-    }
-
-    void bookAppointment() {
-        int petID;
-        string date, reason;
-
-        cout << "\n--- Book Appointment ---\n";
-        cout << "Enter Pet ID : "; cin >> petID;
-
-        try {
-            if (!petExists(petID))
-                throw runtime_error("Pet ID " + to_string(petID) + " not found.");
-
-            if (apptCount >= MAX_APPOINTMENTS)
-                throw runtime_error("Appointment list is full.");
-
-            cout << "Enter Date (DD/MM/YYYY): "; cin.ignore(); getline(cin, date);
-            cout << "Enter Reason           : "; getline(cin, reason);
-
-            if (date.empty() || reason.empty())
-                throw invalid_argument("Date and reason cannot be empty.");
-
-
-            appointments[apptCount] = Appointment(petID, date, reason);
-            apptCount++;
-
-            cout << "  Appointment booked successfully!\n";
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-        }
-    }
-
-    void searchPet(int id) {
-
-        cout << "\n--- Search Result (by ID: " << id << ") ---\n";
-        bool found = false;
-        for (int i = 0; i < petCount; i++) {
-            if (pets[i]->getPetID() == id) {
-                pets[i]->display();
-                found = true;
-                break;
-            }
-        }
-        if (!found) cout << "  No pet found with ID " << id << ".\n";
-    }
-
-    void searchPet(const string& name) {
-
-        cout << "\n--- Search Result (by Name: \"" << name << "\") ---\n";
-        bool found = false;
-        for (int i = 0; i < petCount; i++) {
-            string pName = pets[i]->getPetName();
-            string qName = name;
-            for (int c = 0; c < (int)pName.size(); c++) pName[c] = tolower(pName[c]);
-            for (int c = 0; c < (int)qName.size(); c++) qName[c] = tolower(qName[c]);
-            if (pName == qName) {
-                pets[i]->display();
-                cout << "  ----------\n";
-                found = true;
-            }
-        }
-        if (!found) cout << "  No pet found with name \"" << name << "\".\n";
-    }
-
-    void searchMenu() {
-        int choice;
-        cout << "\n--- Search Pet ---\n";
-        cout << "1) Search by ID\n2) Search by Name\nChoice: ";
-        cin >> choice;
-
-        try {
-            if (choice == 1) {
-                int id;
-                cout << "Enter Pet ID  : "; cin >> id;
-                searchPet(id);          
-            }
-            else if (choice == 2) {
-                string name;
-                cout << "Enter Pet Name: "; cin.ignore(); getline(cin, name);
-                searchPet(name);      
-            }
-            else {
-                throw invalid_argument("Invalid search option.");
-            }
-        }
-        catch (const exception& e) {
-            cout << "  Error: " << e.what() << "\n";
-        }
-    }
-
-    void displayAllRecords() {
-        printSectionHeader(string("ALL OWNERS"));
-        if (ownerCount == 0) cout << "  No owners registered yet.\n";
-        for (int i = 0; i < ownerCount; i++) {
-            owners[i].display();
-            cout << "  --------\n";
-        }
-
-        printSectionHeader(string("ALL PETS"));
-        if (petCount == 0) cout << "  No pets registered yet.\n";
-        for (int i = 0; i < petCount; i++) {
-            pets[i]->display(); 
-            cout << "  --------\n";
-        }
-
-        printSectionHeader(string("ALL APPOINTMENTS"));
-        if (apptCount == 0) cout << "  No appointments booked yet.\n";
-        for (int i = 0; i < apptCount; i++) {
-            appointments[i].display();
-            cout << "  --------\n";
-        }
-    }
-
-    void run() {
-        cout << "\n============================================\n";
-        cout << "   Welcome to Paws & Claws Management     \n";
-        cout << "============================================\n";
-
-        int choice;
-        do {
-            cout << "\n--- Phase 1: Setup ---\n";
-            cout << "  1. Register Owner\n";
-            cout << "  2. Register Pet\n";
-            cout << "--- Phase 2: Operations ---\n";
-            cout << "  3. Book Appointment\n";
-            cout << "  4. Search Pet (by ID or Name)\n";
-            cout << "--- Phase 3: Management ---\n";
-            cout << "  5. Display All Records\n";
-            cout << "  6. Exit\n";
-            cout << "Enter choice: ";
-            cin  >> choice;
-
-            if (cin.fail()) {
-                cin.clear();
-                cin.ignore(1000, '\n');
-                cout << "  Please enter a valid number.\n";
-                continue;
-            }
-
-            switch (choice) {
-                case 1: registerOwner();     break;
-                case 2: registerPet();       break;
-                case 3: bookAppointment();   break;
-                case 4: searchMenu();        break;
-                case 5: displayAllRecords(); break;
-                case 6: cout << "\nGoodbye! Keep your pets happy!\n"; break;
-                default: cout << "  Invalid option. Try again.\n";
-            }
-
-        } while (choice != 6);
+struct MatchPetID {
+    int targetID;
+    MatchPetID(int id) : targetID(id) {}
+    bool operator()(Pet* p) {
+        return p->getPetID() == targetID;
     }
 };
+
+struct MatchOwnerID {
+    int targetID;
+    MatchOwnerID(int id) : targetID(id) {}
+    bool operator()(const Owner& o) {
+        return const_cast<Owner&>(o).getOwnerID() == targetID;
+    }
+};
+
+struct MatchApptID {
+    int targetID;
+    MatchApptID(int id) : targetID(id) {}
+    bool operator()(const Appointment& a) {
+        return const_cast<Appointment&>(a).getAppointmentID() == targetID;
+    }
+};
+
+bool comparePetByName(Pet* a, Pet* b) {
+    return a->getName() < b->getName();
+}
+
 int main() {
-    PetCareSystem system;
-    system.run();
+
+    vector<Pet*>        pets;
+    vector<Owner>       owners;
+    vector<Appointment> appointments;
+
+    int    choice;
+    int    id, age, petRef;
+    string name, breed, phone, email, date, purpose;
+    char   vacChar;
+
+    do {
+        showMenu();
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+
+            case 1: {
+                cout << endl << "  --- Add New Dog ---" << endl;
+
+                cout << "  Enter Pet ID   : "; cin >> id; cin.ignore();
+
+                vector<Pet*>::iterator dupIt = find_if(
+                    pets.begin(), pets.end(), MatchPetID(id)
+                );
+
+                try {
+                    if (dupIt != pets.end()) {
+                        throw runtime_error("Pet ID already exists!");
+                    }
+
+                    Dog* d = new Dog();
+                    d->setPetID(id);
+
+                    cout << "  Enter Name     : "; getline(cin, name);
+                    d->setName(name);
+
+                    cout << "  Enter Age      : "; cin >> age; cin.ignore();
+                    d->setAge(age);
+                    d->setSpecies("Dog");
+
+                    cout << "  Enter Breed    : "; getline(cin, breed);
+                    d->setBreed(breed);
+
+                    cout << "  Vaccinated? (y/n): "; cin >> vacChar; cin.ignore();
+                    d->setVaccinated(vacChar == 'y' || vacChar == 'Y');
+
+                    pets.push_back(d);
+                    cout << "  [+] Dog added successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
+                break;
+            }
+
+            case 2: {
+                cout << endl << "  --- All Pets (Dogs) ---" << endl;
+
+                if (pets.empty()) {
+                    cout << "  No pets added yet." << endl;
+                    break;
+                }
+
+                sort(pets.begin(), pets.end(), comparePetByName);
+                cout << "  (Sorted alphabetically by name)" << endl;
+
+                int count = 1;
+                for (vector<Pet*>::iterator it = pets.begin();
+                     it != pets.end(); ++it) {
+
+                    printLine();
+                    cout << "  Pet #" << count++ << endl;
+
+                    (*it)->display();
+
+                    Dog* dogPtr = dynamic_cast<Dog*>(*it);
+                    if (dogPtr != nullptr) {
+                        dogPtr->bark();
+                    }
+                }
+                printLine();
+                break;
+            }
+
+            case 3: {
+                cout << endl << "  --- Add New Owner ---" << endl;
+
+                cout << "  Enter Owner ID : "; cin >> id; cin.ignore();
+
+                vector<Owner>::iterator dupOwner = find_if(
+                    owners.begin(), owners.end(), MatchOwnerID(id)
+                );
+
+                try {
+                    if (dupOwner != owners.end()) {
+                        throw runtime_error("Owner ID already exists!");
+                    }
+
+                    Owner o;
+                    o.setOwnerID(id);
+
+                    cout << "  Enter Name     : "; getline(cin, name);
+                    o.setName(name);
+
+                    cout << "  Enter Phone    : "; getline(cin, phone);
+                    o.setPhone(phone);
+
+                    cout << "  Enter Email    : "; getline(cin, email);
+                    o.setEmail(email);
+
+                    owners.push_back(o);
+                    cout << "  [+] Owner added successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
+                break;
+            }
+
+            case 4: {
+                cout << endl << "  --- All Owners ---" << endl;
+
+                if (owners.empty()) {
+                    cout << "  No owners added yet." << endl;
+                    break;
+                }
+
+                int count = 1;
+                for (vector<Owner>::iterator it = owners.begin();
+                     it != owners.end(); ++it) {
+
+                    printLine();
+                    cout << "  Owner #" << count++ << endl;
+                    it->displayOwner();
+                }
+                printLine();
+                break;
+            }
+
+            case 5: {
+                cout << endl << "  --- Add New Appointment ---" << endl;
+
+                cout << "  Enter Appointment ID : "; cin >> id; cin.ignore();
+
+                vector<Appointment>::iterator dupAppt = find_if(
+                    appointments.begin(), appointments.end(), MatchApptID(id)
+                );
+
+                try {
+                    if (dupAppt != appointments.end()) {
+                        throw runtime_error("Appointment ID already exists!");
+                    }
+
+                    Appointment a;
+                    a.setAppointmentID(id);
+
+                    cout << "  Enter Pet ID         : "; cin >> petRef; cin.ignore();
+                    a.setPetID(petRef);
+
+                    cout << "  Enter Date (DD/MM/YYYY): "; getline(cin, date);
+                    a.setDate(date);
+
+                    cout << "  Enter Purpose        : "; getline(cin, purpose);
+                    a.setPurpose(purpose);
+
+                    a.setStatus("Scheduled");
+
+                    appointments.push_back(a);
+                    cout << "  [+] Appointment scheduled successfully!" << endl;
+                }
+                catch (runtime_error& e) {
+                    cout << "  [!] Error: " << e.what() << endl;
+                }
+                break;
+            }
+
+            case 6: {
+                cout << endl << "  --- All Appointments ---" << endl;
+
+                if (appointments.empty()) {
+                    cout << "  No appointments added yet." << endl;
+                    break;
+                }
+
+                int count = 1;
+                for (vector<Appointment>::iterator it = appointments.begin();
+                     it != appointments.end(); ++it) {
+
+                    printLine();
+                    cout << "  Appointment #" << count++ << endl;
+                    it->displayAppointment();
+                }
+                printLine();
+                break;
+            }
+
+            case 7: {
+                for (vector<Pet*>::iterator it = pets.begin();
+                     it != pets.end(); ++it) {
+                    delete *it;
+                }
+                pets.clear();
+
+                cout << endl;
+                cout << "  Thank you for using Pet Care Management System!" << endl;
+                cout << "  Goodbye!" << endl << endl;
+                break;
+            }
+
+            default:
+                cout << "  [!] Invalid choice. Please enter 1-7." << endl;
+                break;
+        }
+
+    } while (choice != 7);
+
     return 0;
 }
