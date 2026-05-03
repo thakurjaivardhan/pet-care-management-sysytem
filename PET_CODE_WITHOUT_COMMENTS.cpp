@@ -65,33 +65,6 @@ public:
     }
 };
 
-// ─── Cat ──────────────────────────────────────────────────────────────────────
-
-class Cat : public Pet {
-private:
-    string furColor;
-    bool   isIndoor;
-
-public:
-    Cat() : isIndoor(false) {}
-
-    void setFurColor(string c) { furColor = c; }
-    void setIndoor(bool i)     { isIndoor  = i; }
-
-    string getFurColor() { return furColor; }
-    bool   getIndoor()   { return isIndoor; }
-
-    void display() override {
-        displayPet();
-        cout << "  Fur Color   : " << furColor << endl;
-        cout << "  Indoor      : " << (isIndoor ? "Yes" : "No") << endl;
-    }
-
-    void meow() {
-        cout << "  " << name << " says: Meow! Meow!" << endl;
-    }
-};
-
 // ─── Owner ────────────────────────────────────────────────────────────────────
 
 class Owner {
@@ -212,7 +185,9 @@ int main() {
 
             case 1: {
                 cout << endl << "  --- Add New Dog ---" << endl;
-                cout << "  Enter Pet ID   : "; cin >> id; cin.ignore();
+                cout << "  Enter Pet ID   : ";
+                 cin >> id; 
+                 cin.ignore();
 
                 try {
                     if (idExists(pets, id, [](Pet* p){ return p->getPetID(); }))
@@ -256,9 +231,6 @@ int main() {
                     printLine();
                     cout << "  Pet #" << count++ << endl;
                     (*it)->display();
-
-                    Dog* dogPtr = dynamic_cast<Dog*>(*it);
-                    if (dogPtr != nullptr) dogPtr->bark();
                 }
                 printLine();
                 break;
